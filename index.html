@@ -4,34 +4,40 @@
 <head>
   <link rel="stylesheet" href="style.css">
 </head>
-<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
+<body style='margin : 0px; overflow: scroll; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
 
   <center>
     <div style="margin: 10px;"><strong>DOGGY VISION</strong></div>
     <div>
-    <video id="video" autoplay="true" style="display:none;"></video>
-    <canvas id="canvas" style="width:640px; height:480px;"></canvas>
-    <canvas id="canvas2" style="width:640px; height:480px;"></canvas><br>
+      <video id="video" autoplay="true" style="display:none;"></video>
+      <div style="display: inline-block;">
+        <canvas id="canvas" style="width:640px; height:480px; "></canvas><br>
+        <b>You</b>
+      </div>
+      <div style="display: inline-block;">
+        <canvas id="canvas2" style="width:640px; height:480px;"></canvas><br>
+        <b>Your dog</b>
+      </div>
     </div>
     <br>
     <div>
-    Deuteranopia
-    <label class="switch">
-      <input type="checkbox" onclick="deuteranopiaChanged()" checked>
-      <span class="slider round"></span>
-    </label>
-    <br>
-    Brightness Discrimination
-    <label class="switch">
-      <input type="checkbox" onclick="brightnessDiscriminationChanged()" checked>
-      <span class="slider round"></span>
-    </label>
-    <br>
-    Visual Acuity
-    <input type="range" min="0" max="5" value="0" id="myRange" onchange="visualAcuityChanged()">
-    <br>
-    <br>
-    Image processing algorithm taken from <a href="https://dog-vision.com/">https://dog-vision.com/</a>
+      Deuteranopia<br>
+      <label class="switch">
+        <input type="checkbox" onclick="deuteranopiaChanged()" checked>
+        <span class="slider round"></span>
+      </label>
+      <br>
+      Brightness Discrimination<br>
+      <label class="switch">
+        <input type="checkbox" onclick="brightnessDiscriminationChanged()" checked>
+        <span class="slider round"></span>
+      </label>
+      <br>
+      Visual Acuity<br>
+      <input type="range" min="0" max="5" value="0" id="myRange" onchange="visualAcuityChanged()">
+      <br>
+      <br>
+      Image processing algorithm taken from <a href="https://dog-vision.com/">https://dog-vision.com/</a>
     </div>
   </center>
 
