@@ -6,8 +6,9 @@
 </head>
 <body>
 
-<video id="monitor" autoplay width="100%" height="100%" style="visibility: hidden; float:left;"></video>
-<canvas id="videoImage" width="100%" height="100%" style="visibility: hidden; float:left;"></canvas>
+<video id="monitor" autoplay  style="visibility: hidden; float:left;"></video>
+<canvas id="videoImage"  style="visibility: hidden; float:left;"></canvas>
+<canvas id="videoImageNew"  style="visibility: hidden; float:left;"></canvas>
 
 <script>
 	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -45,6 +46,7 @@ function noStream(e)
 }
 </script>
 
+<script src="imgprocess.js"></script>
 <script src="three.min.js"></script>
 <script src="StereoEffect.js"></script>
 <!--<script src="js/Detector.js"></script>
@@ -109,19 +111,26 @@ function init() {
 
 	video = document.getElementById( 'monitor' );
 	videoImage = document.getElementById( 'videoImage' );
+	videoImageNew = document.getElementById( 'videoImageNew' );
 	videoImageContext = videoImage.getContext( '2d' );
+	videoImageContextNew = videoImageNew.getContext( '2d' );
 	// background color if no video present
 	videoImageContext.fillStyle = '#000000';
 	videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+	var pixels = videoImageContext.getImageData(0, 0, videoImage.width, videoImage.height);
+	var newImage = imgprocess(pixels, true, true, 0);
+	videoImageContextNew.putImageData(newImage, 0, 0);
+	videoImageContextNew.fillRect( 0, 0, videoImageNew.width, videoImageNew.height );
 
-	videoTexture = new THREE.Texture( videoImage );
+	videoTexture = new THREE.Texture( videoImageNew );
 	videoTexture.minFilter = THREE.LinearFilter;
 	videoTexture.magFilter = THREE.LinearFilter;
-	
+	//videoTexture.repeat.set(1, 1);
+
 	var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
 	// the geometry on which the movie will be displayed;
 	// 		movie image will be scaled to fit these dimensions.
-	var movieGeometry = new THREE.PlaneGeometry( width/2, height, 1, 1 );
+	var movieGeometry = new THREE.PlaneGeometry( SCREEN_WIDTH, SCREEN_HEIGHT, 1, 1 );
 	var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
 	movieScreen.position.set(0,0,-600);
 	scene.add(movieScreen);
@@ -140,8 +149,7 @@ function update() {
 }
 
 function render() {	
-	if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
-	{
+	if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
 		videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
 		if ( videoTexture ) 
 			videoTexture.needsUpdate = true;
