@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+</head>
+<body>
+
+<video id="monitor" autoplay width="100%" height="100%" style="visibility: hidden; float:left;"></video>
+<canvas id="videoImage" width="100%" height="100%" style="visibility: hidden; float:left;"></canvas>
+
+<script>
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+	window.URL = window.URL || window.webkitURL;
+
+	var camvideo = document.getElementById('monitor');
+
+	if (!navigator.getUserMedia) 
+	{
+		document.getElementById('errorMessage').innerHTML = 
+			'Sorry. <code>navigator.getUserMedia()</code> is not available.';
+	} else {
+		navigator.getUserMedia({video: true}, gotStream, noStream);
+	}
+
+function gotStream(stream) 
+{
+	if (window.URL) 
+	{   camvideo.src = window.URL.createObjectURL(stream);   } 
+	else // Opera
+	{   camvideo.src = stream;   }
+
+	camvideo.onerror = function(e) 
+	{   stream.stop();   };
+
+	stream.onended = noStream;
+}
+
+function noStream(e) 
+{
+	var msg = 'No camera available.';
+	if (e.code == 1) 
+	{   msg = 'User denied access to use camera.';   }
+	document.getElementById('errorMessage').textContent = msg;
+}
+</script>
+
+<script src="three.min.js"></script>
+<script src="StereoEffect.js"></script>
+<!--<script src="js/Detector.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>-->
+
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+	
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+
+// custom global variables
+var video, videoImage, videoImageContext, videoTexture;
+
+init();
+animate();
+
+// FUNCTIONS 		
+function init() {
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	scene.add(camera);
+	camera.position.set(0,0,0);
+	camera.lookAt(scene.position);	
+
+    renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true
+                });
+    renderer.setClearColor(new THREE.Color('lightgrey'), 0);
+    var width = window.innerWidth ||
+                document.documentElement.clientWidth ||
+                document.body.clientWidth ||
+                document.body.offsetWidth;
+    var height = window.innerHeight ||
+                document.documentElement.clientHeight ||
+                document.body.clientHeight ||
+                document.body.offsetHeight;                        
+    renderer.setSize(width, height);
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0px';
+    renderer.domElement.style.left = '0px';
+
+    stereoRenderer = new THREE.StereoEffect(renderer);         
+    stereoRenderer.setSize(width, height);
+
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	
+	///////////
+	// VIDEO //
+	///////////
+
+	video = document.getElementById( 'monitor' );
+	videoImage = document.getElementById( 'videoImage' );
+	videoImageContext = videoImage.getContext( '2d' );
+	// background color if no video present
+	videoImageContext.fillStyle = '#000000';
+	videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+	videoTexture = new THREE.Texture( videoImage );
+	videoTexture.minFilter = THREE.LinearFilter;
+	videoTexture.magFilter = THREE.LinearFilter;
+	
+	var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
+	// the geometry on which the movie will be displayed;
+	// 		movie image will be scaled to fit these dimensions.
+	var movieGeometry = new THREE.PlaneGeometry( width/2, height, 1, 1 );
+	var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
+	movieScreen.position.set(0,0,-600);
+	scene.add(movieScreen);
+	
+	camera.position.set(0,0,300);
+	camera.lookAt(movieScreen.position);
+}
+
+function animate() {
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update() {		
+}
+
+function render() {	
+	if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+	{
+		videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
+		if ( videoTexture ) 
+			videoTexture.needsUpdate = true;
+	}
+
+	stereoRenderer.render( scene, camera );
+}
+
+</script>
+
+</body>
+</html>
